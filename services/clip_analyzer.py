@@ -1,9 +1,9 @@
-import base64
 import os
 import tempfile
 from pathlib import Path
 
-import anthropic
+from google import genai
+from google.genai import types
 from PIL import Image
 
 from config import settings
@@ -12,16 +12,9 @@ from models import ClipInfo
 
 class ClipAnalyzer:
     def __init__(self):
-        self._client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        self._client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     def extract_frames(self, video_path: str, num_frames: int = 5) -> list[str]:
-        """
-        Extract evenly-spaced frames from a video and save as JPEG files.
-
-        :param video_path: Path to the source video file.
-        :param num_frames: Number of frames to extract.
-        :return: List of paths to extracted frame images.
-        """
         from moviepy.editor import VideoFileClip
 
         clip = VideoFileClip(video_path)
@@ -43,54 +36,25 @@ class ClipAnalyzer:
         return frame_paths
 
     def analyze_clip(self, frame_paths: list[str]) -> str:
-        """
-        Describe video clip content using Claude Vision from extracted frames.
-
-        :param frame_paths: Paths to frame image files.
-        :return: Text description of the clip.
-        """
-        content: list[dict] = []
-
+        parts = []
         for frame_path in frame_paths:
             with open(frame_path, "rb") as f:
-                image_data = base64.standard_b64encode(f.read()).decode("utf-8")
-            content.append(
-                {
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": "image/jpeg",
-                        "data": image_data,
-                    },
-                }
-            )
+                image_bytes = f.read()
+            parts.append(types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"))
 
-        content.append(
-            {
-                "type": "text",
-                "text": (
-                    "These are frames sampled from a video clip. "
-                    "Describe what is happening in the clip concisely in 1-2 sentences, "
-                    "focusing on the main subject, action, and visual style."
-                ),
-            }
+        parts.append(
+            "These are frames sampled from a video clip. "
+            "Describe what is happening in the clip concisely in 1-2 sentences, "
+            "focusing on the main subject, action, and visual style."
         )
 
-        message = self._client.messages.create(
-            model="claude-opus-4-6",
-            max_tokens=256,
-            messages=[{"role": "user", "content": content}],
+        response = self._client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=parts,
         )
-
-        return message.content[0].text.strip()
+        return response.text.strip()
 
     def analyze_all(self, clips_folder: str) -> list[ClipInfo]:
-        """
-        Analyze every video clip in a folder and return ClipInfo for each.
-
-        :param clips_folder: Directory containing video files.
-        :return: List of ClipInfo objects with path, duration, description, thumbnail.
-        """
         from moviepy.editor import VideoFileClip
 
         video_extensions = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"}
