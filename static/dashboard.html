@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EditorMate — Job Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+
+  .logo svg { width: 28px; height: 28px; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-text { color: var(--muted); font-size: 12px; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── Submit Form ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 7px 18px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .form-grid.single { grid-template-columns: 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.span2 { grid-column: span 2; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  input, textarea, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+  }
+
+  .options-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 6px;
+  }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { color: var(--text); }
+
+  .form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+  }
+
+  #submit-result {
+    font-size: 12px;
+    color: var(--green);
+    display: none;
+  }
+
+  /* ── Lookup bar ── */
+  .lookup-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .lookup-bar input { flex: 1; }
+
+  /* ── Job Table ── */
+  .jobs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .jobs-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 12px 14px;
+    vertical-align: middle;
+  }
+
+  .job-id {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .copy-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+  }
+
+  .copy-btn:hover { color: var(--text); }
+  .copy-btn.copied { color: var(--green); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-pending  { background: rgba(100,116,139,0.15); color: var(--muted); }
+  .badge-processing { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-completed  { background: rgba(34,197,94,0.15);  color: var(--green); }
+  .badge-failed   { background: rgba(239,68,68,0.15);  color: var(--red); }
+
+  .spinner {
+    width: 10px; height: 10px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .task-type {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .output-link {
+    color: var(--accent2);
+    text-decoration: none;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .output-link:hover { text-decoration: underline; }
+
+  .timestamp { font-size: 12px; color: var(--muted); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--muted);
+  }
+
+  .empty-state svg { opacity: 0.3; margin-bottom: 12px; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.25s;
+    z-index: 999;
+  }
+
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── Detail panel ── */
+  .detail-row td {
+    background: var(--bg);
+    padding: 0;
+  }
+
+  .detail-inner {
+    padding: 16px 18px;
+    font-size: 12px;
+    color: var(--muted);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .detail-field label { display: block; color: var(--muted); margin-bottom: 3px; font-size: 11px; }
+  .detail-field span  { color: var(--text); font-size: 12px; }
+
+  .error-msg {
+    color: var(--red);
+    font-family: monospace;
+    font-size: 11px;
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 8px;
+    grid-column: span 3;
+    word-break: break-all;
+  }
+
+  .refresh-info { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="7" fill="#6c63ff22"/>
+      <path d="M7 14h14M14 7v14" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="14" cy="14" r="4" stroke="#6c63ff" stroke-width="2"/>
+    </svg>
+    EditorMate
+  </div>
+  <div class="header-right">
+    <div class="dot"></div>
+    <span class="status-text" id="api-status">Connecting…</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Submit Job -->
+  <div class="card">
+    <div class="card-title">Submit New Job</div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('edit')">Video Edit</button>
+      <button class="tab" onclick="switchTab('project')">Multi-Clip Project</button>
+    </div>
+
+    <!-- Edit tab -->
+    <div id="tab-edit">
+      <div class="form-grid">
+        <div class="field span2">
+          <label>Video URL</label>
+          <input id="edit-url" type="url" placeholder="https://…/video.mp4" />
+        </div>
+        <div class="field span2">
+          <label>Processing Options</label>
+          <div class="options-row">
+            <label class="checkbox-row"><input type="checkbox" id="opt-captions" /> Add Captions</label>
+            <label class="checkbox-row"><input type="checkbox" id="opt-silence" /> Trim Silence</label>
+            <label class="checkbox-row"><input type="checkbox" id="opt-normalize" /> Normalize Audio</label>
+          </div>
+        </div>
+        <div class="field span2">
+          <label>Background Music URL <span style="color:var(--muted)">(optional)</span></label>
+          <input id="opt-music" type="url" placeholder="https://…/music.mp3" />
+        </div>
+      </div>
+      <div class="form-footer">
+        <span id="submit-result"></span>
+        <button class="btn btn-primary" onclick="submitEdit()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Submit Edit Job
+        </button>
+      </div>
+    </div>
+
+    <!-- Project tab -->
+    <div id="tab-project" style="display:none">
+      <div class="form-grid">
+        <div class="field span2">
+          <label>Clips Folder Path</label>
+          <input id="proj-folder" type="text" placeholder="/path/to/clips" />
+        </div>
+        <div class="field span2">
+          <label>Prompt / Instructions</label>
+          <textarea id="proj-prompt" placeholder="Create a cinematic 60-second highlight reel…"></textarea>
+        </div>
+        <div class="field">
+          <label>Audio File Path <span style="color:var(--muted)">(optional)</span></label>
+          <input id="proj-audio" type="text" placeholder="/path/to/audio.mp3" />
+        </div>
+        <div class="field">
+          <label>Aspect Ratio</label>
+          <select id="proj-aspect">
+            <option value="16:9">16:9 (Landscape)</option>
+            <option value="9:16">9:16 (Portrait / Reels)</option>
+            <option value="1:1">1:1 (Square)</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>Voiceover Script <span style="color:var(--muted)">(optional)</span></label>
+          <textarea id="proj-voiceover" placeholder="Leave blank to skip voiceover…"></textarea>
+        </div>
+      </div>
+      <div class="form-footer">
+        <span id="submit-result2"></span>
+        <button class="btn btn-primary" onclick="submitProject()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Submit Project Job
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lookup by ID -->
+  <div class="section-title">Look Up Job by ID</div>
+  <div class="lookup-bar">
+    <input id="lookup-input" type="text" placeholder="Paste a job ID…" />
+    <button class="btn btn-ghost" onclick="lookupJob()">Look Up</button>
+  </div>
+
+  <!-- Job List -->
+  <div class="card" style="padding:0; overflow:hidden;">
+    <div style="padding:18px 20px 14px; border-bottom:1px solid var(--border);">
+      <div class="jobs-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="card-title" style="margin:0">Job Tracker</span>
+          <span class="jobs-count" id="jobs-count">0 jobs</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="refresh-info" id="refresh-countdown">polling in 3s</span>
+          <button class="btn btn-ghost btn-sm" onclick="clearJobs()">Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table id="jobs-table">
+        <thead>
+          <tr>
+            <th>Job ID</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Progress</th>
+            <th>Output</th>
+            <th>Submitted</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="jobs-tbody">
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/>
+                  <path d="M8 21h8M12 17v4"/>
+                </svg>
+                <div>No jobs yet. Submit one above.</div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+const POLL_INTERVAL = 3000;
+let jobs = JSON.parse(localStorage.getItem('em_jobs') || '[]');
+let pollTimer = null;
+let countdown = POLL_INTERVAL / 1000;
+let expandedRows = new Set();
+
+// ── Init ───────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  checkApi();
+  renderTable();
+  startPolling();
+});
+
+// ── API health ─────────────────────────────────────────────────
+async function checkApi() {
+  try {
+    const r = await fetch('/health');
+    if (r.ok) {
+      document.getElementById('api-status').textContent = 'API online';
+    } else throw new Error();
+  } catch {
+    document.getElementById('api-status').textContent = 'API offline';
+    document.querySelector('.dot').style.background = 'var(--red)';
+    document.querySelector('.dot').style.boxShadow = '0 0 6px var(--red)';
+  }
+}
+
+// ── Tabs ───────────────────────────────────────────────────────
+function switchTab(name) {
+  document.getElementById('tab-edit').style.display    = name === 'edit'    ? '' : 'none';
+  document.getElementById('tab-project').style.display = name === 'project' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && name === 'edit') || (i === 1 && name === 'project'));
+  });
+}
+
+// ── Submit Edit ────────────────────────────────────────────────
+async function submitEdit() {
+  const url = document.getElementById('edit-url').value.trim();
+  if (!url) { toast('Enter a video URL'); return; }
+
+  const payload = {
+    input_url: url,
+    options: {
+      add_captions:    document.getElementById('opt-captions').checked,
+      trim_silence:    document.getElementById('opt-silence').checked,
+      normalize_audio: document.getElementById('opt-normalize').checked,
+      background_music: document.getElementById('opt-music').value.trim() || null
+    }
+  };
+
+  try {
+    const r = await fetch('/edit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    addJob({ id: data.job_id, type: 'edit', status: data.status, submitted: new Date().toISOString(), output_url: null, error: null });
+    showSubmitResult('submit-result', data.job_id);
+    toast('Job submitted — ' + data.job_id.slice(0,8) + '…');
+  } catch(e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+// ── Submit Project ─────────────────────────────────────────────
+async function submitProject() {
+  const folder = document.getElementById('proj-folder').value.trim();
+  const prompt = document.getElementById('proj-prompt').value.trim();
+  if (!folder || !prompt) { toast('Folder and prompt are required'); return; }
+
+  const arParts = document.getElementById('proj-aspect').value.split(':');
+  const payload = {
+    clips_folder: folder,
+    prompt,
+    audio_file:   document.getElementById('proj-audio').value.trim() || null,
+    aspect_ratio: [parseInt(arParts[0]), parseInt(arParts[1])],
+    voiceover:    document.getElementById('proj-voiceover').value.trim() || null
+  };
+
+  try {
+    const r = await fetch('/project', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    addJob({ id: data.job_id, type: 'project', status: data.status, submitted: new Date().toISOString(), output_url: null, error: null, clips_analyzed: 0, clips_selected: 0 });
+    showSubmitResult('submit-result2', data.job_id);
+    toast('Project submitted — ' + data.job_id.slice(0,8) + '…');
+  } catch(e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+// ── Lookup ─────────────────────────────────────────────────────
+async function lookupJob() {
+  const id = document.getElementById('lookup-input').value.trim();
+  if (!id) return;
+  await pollSingleJob(id, true);
+  document.getElementById('lookup-input').value = '';
+}
+
+// ── Job store ──────────────────────────────────────────────────
+function addJob(job) {
+  jobs.unshift(job);
+  saveJobs();
+  renderTable();
+}
+
+function saveJobs() {
+  localStorage.setItem('em_jobs', JSON.stringify(jobs.slice(0, 200)));
+}
+
+function clearJobs() {
+  jobs = [];
+  saveJobs();
+  renderTable();
+  toast('Cleared all jobs');
+}
+
+// ── Poll ───────────────────────────────────────────────────────
+function startPolling() {
+  clearInterval(pollTimer);
+  countdown = POLL_INTERVAL / 1000;
+  pollTimer = setInterval(async () => {
+    countdown--;
+    document.getElementById('refresh-countdown').textContent = `polling in ${countdown}s`;
+    if (countdown <= 0) {
+      countdown = POLL_INTERVAL / 1000;
+      await pollAllActive();
+    }
+  }, 1000);
+}
+
+async function pollAllActive() {
+  const active = jobs.filter(j => j.status === 'pending' || j.status === 'processing');
+  await Promise.all(active.map(j => pollSingleJob(j.id, false)));
+}
+
+async function pollSingleJob(id, addIfMissing) {
+  const isEdit    = jobs.find(j => j.id === id)?.type !== 'project';
+  const endpoint  = jobs.find(j => j.id === id)?.type === 'project' ? `/project/${id}` : `/job/${id}`;
+
+  // If not in list yet, try edit endpoint first
+  const url = jobs.find(j => j.id === id) ? endpoint : `/job/${id}`;
+
+  try {
+    const r = await fetch(url);
+    if (!r.ok) {
+      // Try project endpoint
+      const r2 = await fetch(`/project/${id}`);
+      if (!r2.ok) { toast('Job not found: ' + id, true); return; }
+      const d2 = await r2.json();
+      handleJobUpdate(id, d2, 'project', addIfMissing);
+      return;
+    }
+    const data = await r.json();
+    const type = data.clips_analyzed !== undefined ? 'project' : 'edit';
+    handleJobUpdate(id, data, type, addIfMissing);
+  } catch(e) {
+    console.error('Poll error', e);
+  }
+}
+
+function handleJobUpdate(id, data, type, addIfMissing) {
+  const idx = jobs.findIndex(j => j.id === id);
+  const updated = {
+    id,
+    type,
+    status: data.status,
+    output_url: data.output_url || null,
+    error: data.error || null,
+    clips_analyzed: data.clips_analyzed || 0,
+    clips_selected: data.clips_selected || 0,
+    submitted: idx >= 0 ? jobs[idx].submitted : new Date().toISOString()
+  };
+
+  if (idx >= 0) {
+    const prev = jobs[idx];
+    jobs[idx] = updated;
+    if (prev.status !== updated.status) {
+      if (updated.status === 'completed') toast('✓ Job done — ' + id.slice(0,8) + '…');
+      if (updated.status === 'failed')    toast('✗ Job failed — ' + id.slice(0,8) + '…', true);
+    }
+  } else if (addIfMissing) {
+    jobs.unshift(updated);
+    toast('Found job — ' + id.slice(0,8) + '…');
+  }
+
+  saveJobs();
+  renderTable();
+}
+
+// ── Render ─────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('jobs-tbody');
+  document.getElementById('jobs-count').textContent = jobs.length + ' job' + (jobs.length !== 1 ? 's' : '');
+
+  if (jobs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+      </svg>
+      <div>No jobs yet. Submit one above.</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = jobs.map((job, i) => {
+    const badge   = badgeHtml(job.status);
+    const progress = progressText(job);
+    const output  = job.output_url
+      ? `<a class="output-link" href="${job.output_url}" target="_blank">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+           Download
+         </a>`
+      : `<span style="color:var(--muted);font-size:12px">—</span>`;
+
+    const ts = new Date(job.submitted).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    const date = new Date(job.submitted).toLocaleDateString([], {month:'short', day:'numeric'});
+    const expanded = expandedRows.has(job.id);
+
+    let rows = `<tr onclick="toggleDetail('${job.id}')" style="cursor:pointer;">
+      <td>
+        <div class="job-id">
+          <span title="${job.id}">${job.id.slice(0,8)}…</span>
+          <button class="copy-btn" id="copy-${job.id}" onclick="copyId(event,'${job.id}')" title="Copy full ID">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </td>
+      <td><span class="task-type">${job.type}</span></td>
+      <td>${badge}</td>
+      <td><span style="font-size:12px;color:var(--muted)">${progress}</span></td>
+      <td>${output}</td>
+      <td><span class="timestamp" title="${job.submitted}">${date} ${ts}</span></td>
+      <td>
+        <svg style="color:var(--muted);transition:transform 0.2s;transform:rotate(${expanded?'90':'0'}deg)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </td>
+    </tr>`;
+
+    if (expanded) {
+      rows += `<tr class="detail-row">
+        <td colspan="7">
+          <div class="detail-inner">
+            <div class="detail-field"><label>Full Job ID</label><span style="font-family:monospace;font-size:11px;word-break:break-all">${job.id}</span></div>
+            <div class="detail-field"><label>Status</label><span>${job.status}</span></div>
+            <div class="detail-field"><label>Type</label><span>${job.type}</span></div>
+            ${job.type === 'project' ? `<div class="detail-field"><label>Clips Analyzed</label><span>${job.clips_analyzed}</span></div>
+            <div class="detail-field"><label>Clips Selected</label><span>${job.clips_selected}</span></div>` : ''}
+            ${job.output_url ? `<div class="detail-field"><label>Output URL</label><a class="output-link" href="${job.output_url}" target="_blank">${job.output_url}</a></div>` : ''}
+            ${job.error ? `<div class="error-msg">Error: ${escHtml(job.error)}</div>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }
+
+    return rows;
+  }).join('');
+}
+
+function toggleDetail(id) {
+  if (expandedRows.has(id)) expandedRows.delete(id);
+  else expandedRows.add(id);
+  renderTable();
+}
+
+function badgeHtml(status) {
+  const icons = {
+    pending:    `<span style="width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block"></span>`,
+    processing: `<span class="spinner"></span>`,
+    completed:  `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`,
+    failed:     `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+  };
+  return `<span class="badge badge-${status}">${icons[status] || ''} ${status}</span>`;
+}
+
+function progressText(job) {
+  if (job.status === 'pending')    return 'Waiting in queue';
+  if (job.status === 'processing') return 'Worker processing…';
+  if (job.status === 'failed')     return 'Failed';
+  if (job.status === 'completed' && job.type === 'project')
+    return `${job.clips_selected} / ${job.clips_analyzed} clips`;
+  if (job.status === 'completed')  return 'Done';
+  return '—';
+}
+
+// ── Utils ──────────────────────────────────────────────────────
+function copyId(e, id) {
+  e.stopPropagation();
+  navigator.clipboard.writeText(id).then(() => {
+    const btn = document.getElementById('copy-' + id);
+    btn.classList.add('copied');
+    setTimeout(() => btn.classList.remove('copied'), 1500);
+    toast('Copied!');
+  });
+}
+
+function showSubmitResult(elId, jobId) {
+  const el = document.getElementById(elId);
+  el.style.display = 'inline';
+  el.textContent = `Job created: ${jobId.slice(0,12)}…`;
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+function toast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isError ? 'rgba(239,68,68,0.4)' : 'var(--border)';
+  t.style.color = isError ? 'var(--red)' : 'var(--text)';
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
